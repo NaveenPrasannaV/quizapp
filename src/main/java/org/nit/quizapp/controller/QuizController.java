@@ -1,6 +1,5 @@
 package org.nit.quizapp.controller;
 
-import org.nit.quizapp.model.Question;
 import org.nit.quizapp.model.QuestionWrapper;
 import org.nit.quizapp.model.Response;
 import org.nit.quizapp.service.QuizService;

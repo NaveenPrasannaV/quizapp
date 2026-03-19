@@ -1,6 +1,5 @@
 package org.nit.quizapp.service;
 
-import org.nit.quizapp.dao.QuestionDao;
 import org.nit.quizapp.dao.QuizDao;
 import org.nit.quizapp.model.Question;
 import org.nit.quizapp.model.QuestionWrapper;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class QuizService {
@@ -21,20 +19,14 @@ public class QuizService {
     @Autowired
     private QuizDao quizDao;
 
-    @Autowired
-    private QuestionDao questionDao;
-
-
     public ResponseEntity<String> createQuiz(String category, int numQ, String title) {
 
-        List<Question> questions = questionDao.findRandomQuestionsByCategory(category, numQ);
-
-        Quiz quiz = new Quiz();
-        quiz.setTitle(title);
-        quiz.setQuestions(questions);
-        quizDao.save(quiz);
-
-        System.out.println(questions.size());
+//        List<Question> questions = questionDao.findRandomQuestionsByCategory(category, numQ);
+//
+//        Quiz quiz = new Quiz();
+//        quiz.setTitle(title);
+//        quiz.setQuestions(questions);
+//        quizDao.save(quiz);
 
         return new ResponseEntity<>("Success", HttpStatus.OK);
 
