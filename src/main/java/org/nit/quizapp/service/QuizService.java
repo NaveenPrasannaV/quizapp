@@ -1,7 +1,7 @@
 package org.nit.quizapp.service;
 
 import org.nit.quizapp.dao.QuizDao;
-import org.nit.quizapp.model.Question;
+import org.nit.quizapp.feign.QuizInterface;
 import org.nit.quizapp.model.QuestionWrapper;
 import org.nit.quizapp.model.Quiz;
 import org.nit.quizapp.model.Response;
@@ -19,14 +19,16 @@ public class QuizService {
     @Autowired
     private QuizDao quizDao;
 
+    @Autowired
+    QuizInterface quizInterface;
+
     public ResponseEntity<String> createQuiz(String category, int numQ, String title) {
 
-//        List<Question> questions = questionDao.findRandomQuestionsByCategory(category, numQ);
-//
-//        Quiz quiz = new Quiz();
-//        quiz.setTitle(title);
-//        quiz.setQuestions(questions);
-//        quizDao.save(quiz);
+        List<Integer> questions = quizInterface.getQuestionsForQuiz(category, numQ).getBody();
+        Quiz quiz = new Quiz();
+        quiz.setTitle(title);
+        quiz.setQuestionIds(questions);
+        quizDao.save(quiz);
 
         return new ResponseEntity<>("Success", HttpStatus.OK);
 
@@ -34,40 +36,16 @@ public class QuizService {
 
     public ResponseEntity<List<QuestionWrapper>> getQuizQuestion(Integer id) {
 
-        Quiz quiz = quizDao.findById(id)
-                .orElseThrow(() -> new RuntimeException("Quiz not found"));
+        Quiz quiz = quizDao.findById(id).get();
+        List<Integer> questionIds = quiz.getQuestionIds();
 
-        List<QuestionWrapper> questionsForUser = new ArrayList<>();
+        List<QuestionWrapper> questionsFromId = quizInterface.getQuestionsFromId(questionIds).getBody();
 
-        for (Question question : quiz.getQuestions()) {
-
-            questionsForUser.add(
-                    new QuestionWrapper(
-                            question.getId(),
-                            question.getQuestionTitle(),
-                            question.getOption1(),
-                            question.getOption2(),
-                            question.getOption3(),
-                            question.getOption4()
-                    )
-            );
-        }
-
-        return ResponseEntity.ok(questionsForUser);
+        return new ResponseEntity<>(questionsFromId, HttpStatus.OK);
     }
 
     public ResponseEntity<Integer> calculateResult(Integer id, List<Response> responses) {
-        Quiz quiz = quizDao.findById(id).get();
-        List<Question> questions = quiz.getQuestions();
-        int right = 0;
-        int i = 0;
-        for (Response response : responses) {
-            if (response.getResponse().equals(questions.get(i).getRightAnswer()))
-                right++;
-
-            i++;
-        }
-        return new ResponseEntity<>(right, HttpStatus.OK);
-
+        Integer score = quizInterface.getScore(responses).getBody();
+        return ResponseEntity.ok(score);
     }
 }
